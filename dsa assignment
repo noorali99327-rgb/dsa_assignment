@@ -1,0 +1,228 @@
+# DSA Assignment: Stack and Circular Queue Using Arrays
+
+This repository contains array-based implementations of a stack and a circular queue in C++. Neither implementation uses a built-in stack or queue library.
+
+## Contents
+
+- [Question 1: Stack](#question-1-stack-using-an-array)
+- [Question 2: Circular Queue](#question-2-circular-queue-using-an-array)
+- [How to compile and run](#how-to-compile-and-run)
+
+---
+
+## Question 1: Stack Using an Array
+
+A **stack** follows the **LIFO** (Last In, First Out) rule: the last item pushed is the first item popped. This implementation has a fixed capacity and supports `PUSH`, `POP`, `PEEK`, and `DISPLAY`.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Stack {
+private:
+    static const int CAPACITY = 5;
+    int items[CAPACITY];
+    int topIndex;
+
+public:
+    Stack() : topIndex(-1) {}
+
+    bool isEmpty() const {
+        return topIndex == -1;
+    }
+
+    bool isFull() const {
+        return topIndex == CAPACITY - 1;
+    }
+
+    void push(int value) {
+        if (isFull()) {
+            cout << "Stack Overflow: cannot push " << value << ".\n";
+            return;
+        }
+
+        items[++topIndex] = value;
+        cout << value << " pushed onto the stack.\n";
+    }
+
+    void pop() {
+        if (isEmpty()) {
+            cout << "Stack Underflow: cannot pop from an empty stack.\n";
+            return;
+        }
+
+        cout << items[topIndex--] << " popped from the stack.\n";
+    }
+
+    void peek() const {
+        if (isEmpty()) {
+            cout << "Stack is empty; no top element.\n";
+            return;
+        }
+
+        cout << "Top element: " << items[topIndex] << '\n';
+    }
+
+    void display() const {
+        if (isEmpty()) {
+            cout << "Stack is empty.\n";
+            return;
+        }
+
+        cout << "Stack (top to bottom): ";
+        for (int i = topIndex; i >= 0; --i) {
+            cout << items[i] << ' ';
+        }
+        cout << '\n';
+    }
+};
+
+int main() {
+    Stack stack;
+
+    stack.push(10);
+    stack.push(20);
+    stack.push(30);
+    stack.display();
+    stack.peek();
+    stack.pop();
+    stack.display();
+
+    return 0;
+}
+```
+
+### Stack complexity
+
+| Operation | Time complexity | Extra space |
+|---|---:|---:|
+| `PUSH(x)` | O(1) | O(1) |
+| `POP()` | O(1) | O(1) |
+| `PEEK()` | O(1) | O(1) |
+| `DISPLAY()` | O(n) | O(1) |
+
+The fixed array reserves **O(CAPACITY)** total storage. Each operation uses O(1) auxiliary space; `DISPLAY()` prints elements without creating another collection.
+
+If `PUSH` is called when the stack is full, the program reports **Stack Overflow** and leaves the stack unchanged. If `POP` is called when empty, it reports **Stack Underflow**. `PEEK` on an empty stack reports that no top element exists. Because the array has a fixed capacity, it cannot store additional items once full; a larger array or resizable storage would be needed to increase the capacity.
+
+---
+
+## Question 2: Circular Queue Using an Array
+
+A **queue** follows the **FIFO** (First In, First Out) rule: the first item enqueued is the first item dequeued. A circular queue wraps its rear index to the start of the array when it reaches the last position. This implementation tracks the number of items, so it can distinguish a full queue from an empty one.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class CircularQueue {
+private:
+    static const int CAPACITY = 5;
+    int items[CAPACITY];
+    int frontIndex;
+    int rearIndex;
+    int count;
+
+public:
+    CircularQueue() : frontIndex(0), rearIndex(-1), count(0) {}
+
+    bool isEmpty() const {
+        return count == 0;
+    }
+
+    bool isFull() const {
+        return count == CAPACITY;
+    }
+
+    void enqueue(int value) {
+        if (isFull()) {
+            cout << "Queue is full; cannot enqueue " << value << ".\n";
+            return;
+        }
+
+        rearIndex = (rearIndex + 1) % CAPACITY;
+        items[rearIndex] = value;
+        ++count;
+        cout << value << " enqueued.\n";
+    }
+
+    void dequeue() {
+        if (isEmpty()) {
+            cout << "Queue is empty; cannot dequeue.\n";
+            return;
+        }
+
+        cout << items[frontIndex] << " dequeued.\n";
+        frontIndex = (frontIndex + 1) % CAPACITY;
+        --count;
+
+        if (count == 0) {
+            frontIndex = 0;
+            rearIndex = -1;
+        }
+    }
+
+    void front() const {
+        if (isEmpty()) {
+            cout << "Queue is empty; there is no front element.\n";
+            return;
+        }
+
+        cout << "Front element: " << items[frontIndex] << '\n';
+    }
+
+    void display() const {
+        if (isEmpty()) {
+            cout << "Queue is empty.\n";
+            return;
+        }
+
+        cout << "Queue (front to rear): ";
+        for (int i = 0; i < count; ++i) {
+            int index = (frontIndex + i) % CAPACITY;
+            cout << items[index] << ' ';
+        }
+        cout << '\n';
+    }
+};
+
+int main() {
+    CircularQueue queue;
+
+    queue.enqueue(10);
+    queue.enqueue(20);
+    queue.enqueue(30);
+    queue.display();
+    queue.front();
+
+    queue.dequeue();
+    queue.enqueue(40);
+    queue.enqueue(50);
+    queue.display();
+
+    return 0;
+}
+```
+
+### Circular queue comparison and complexity
+
+1. **Memory utilization:** A circular queue reuses positions freed by dequeues. When the rear reaches the last array index, it wraps to the beginning if space is available.
+2. **Time complexity:** `ENQUEUE` and `DEQUEUE` each take **O(1)** time because they update an index and the item count without shifting other elements.
+3. **Space complexity:** The array uses **O(CAPACITY)** space. The queue uses **O(1)** extra space for its indices and count.
+4. **Linear queue limitation:** In a simple array-based linear queue, the rear can reach the last index even after dequeues have freed positions at the beginning. The queue may then appear full despite unused array positions. This is called **false overflow** or wasted space. A circular queue reuses those positions by wrapping around.
+
+---
+
+## How to compile and run
+
+The code blocks above are separate programs because each has its own `main()` function. Save each block into its own `.cpp` file, for example `stack.cpp` and `circular_queue.cpp`, then compile and run them separately with a C++ compiler:
+
+```bash
+g++ -std=c++17 -Wall -Wextra -pedantic stack.cpp -o stack
+./stack
+
+g++ -std=c++17 -Wall -Wextra -pedantic circular_queue.cpp -o circular_queue
+./circular_queue
+```
+
+On Windows with MinGW, run the generated programs as `stack.exe` and `circular_queue.exe`.
